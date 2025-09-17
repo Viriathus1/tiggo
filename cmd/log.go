@@ -7,8 +7,12 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
+
+	"github.com/Viriathus1/tiggo/internal/tui"
 )
 
 // logCmd represents the log command
@@ -23,7 +27,11 @@ var logCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println(string(output))
+		commitLines := strings.Split(strings.TrimSpace(string(output)), "\n")
+		if _, err := tea.NewProgram(tui.NewLogList(commitLines)).Run(); err != nil {
+			fmt.Printf("error running program: %v", err)
+			os.Exit(1)
+		}
 	},
 }
 
