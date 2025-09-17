@@ -1,6 +1,5 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-
+Copyright © 2025 Viriathus1 <49337323+Viriathus1@users.noreply.github.com>
 */
 package main
 
