@@ -8,22 +8,27 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-var (
-	listView     = lipgloss.NewStyle().Margin(1, 2)
-	brutalBorder = lipgloss.NewStyle().
-			Border(lipgloss.NormalBorder()).
-			BorderForeground(lipgloss.Color("15")). // pure white
-			Padding(0, 1)
-	titleStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("51")).Underline(true)
-	selectedStyle = lipgloss.NewStyle().
-			Background(lipgloss.Color("15")). // white background
-			Foreground(lipgloss.Color("0")).  // black text
-			Bold(true)
-	normalStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("15"))
+const (
+	listHeight = 14
+	listWidth  = 50
+)
 
-	hashStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Bold(true) // gray hash
-	messageStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("15"))
+var (
+	hashStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#7B5E57")).Bold(true)
+
+	messageStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#D4BFAA"))
+
+	selectedStyle = lipgloss.NewStyle().
+			Background(lipgloss.Color("#CBB08F")).
+			Foreground(lipgloss.Color("#4B2E2B"))
+
+	normalStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#7B5E57"))
+
+	borderStyle = lipgloss.NewStyle().
+			Border(lipgloss.NormalBorder()).
+			BorderForeground(lipgloss.Color("#A67C52")). // medium brown border
+			Padding(1, 2)
 )
 
 type commitItem struct {
@@ -58,8 +63,9 @@ func NewLogList(commits []string) tea.Model {
 	d.Styles.SelectedTitle = selectedStyle
 	d.Styles.SelectedDesc = selectedStyle
 
-	l := list.New(items, d, 0, 0)
+	l := list.New(items, d, listWidth, listHeight)
 	l.Title = "Git Log"
+	l.SetShowStatusBar(false)
 
 	return logModel{list: l}
 }
@@ -69,17 +75,11 @@ func (m logModel) Init() tea.Cmd {
 }
 
 func (m logModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		x, y := listView.GetFrameSize()
-		m.list.SetSize(msg.Width-x, msg.Height-y)
-	}
-
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
 	return m, cmd
 }
 
 func (m logModel) View() string {
-	return brutalBorder.Render(m.list.View())
+	return borderStyle.Render(m.list.View())
 }
