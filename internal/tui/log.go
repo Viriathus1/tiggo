@@ -14,21 +14,14 @@ const (
 )
 
 var (
-	hashStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#7B5E57")).Bold(true)
-
-	messageStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#D4BFAA"))
+	hashStyle = lipgloss.NewStyle().Bold(true)
 
 	selectedStyle = lipgloss.NewStyle().
-			Background(lipgloss.Color("#CBB08F")).
-			Foreground(lipgloss.Color("#4B2E2B"))
+			Background(lipgloss.Color("#444444")).
+			Foreground(lipgloss.Color("#FFFFFF"))
 
 	normalStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#7B5E57"))
-
-	borderStyle = lipgloss.NewStyle().
-			Border(lipgloss.NormalBorder()).
-			BorderForeground(lipgloss.Color("#A67C52")). // medium brown border
-			Padding(1, 2)
+			Foreground(lipgloss.Color("#808080"))
 )
 
 type commitItem struct {
@@ -38,7 +31,7 @@ type commitItem struct {
 
 func (ct *commitItem) Title() string       { return hashStyle.Render(ct.title) }
 func (ct *commitItem) Description() string { return ct.desc }
-func (ct *commitItem) FilterValue() string { return messageStyle.Render(ct.desc) }
+func (ct *commitItem) FilterValue() string { return ct.desc }
 
 type logModel struct {
 	list list.Model
@@ -65,6 +58,7 @@ func NewLogList(commits []string) tea.Model {
 
 	l := list.New(items, d, listWidth, listHeight)
 	l.Title = "Git Log"
+	l.Styles.Title = selectedStyle.PaddingLeft(2).PaddingRight(2)
 	l.SetShowStatusBar(false)
 
 	return logModel{list: l}
@@ -81,5 +75,5 @@ func (m logModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m logModel) View() string {
-	return borderStyle.Render(m.list.View())
+	return m.list.View()
 }
