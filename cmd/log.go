@@ -25,7 +25,7 @@ var logCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if _, err := tea.NewProgram(tui.NewLogList(gitClient)).Run(); err != nil {
+		if _, err := tea.NewProgram(tui.NewLogList(gitClient), tea.WithAltScreen()).Run(); err != nil {
 			fmt.Printf("error running program: %v", err)
 			os.Exit(1)
 		}
