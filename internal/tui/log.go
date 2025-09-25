@@ -1,8 +1,7 @@
 package tui
 
 import (
-	"strings"
-
+	"github.com/Viriathus1/tiggo/internal/gitclient"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -34,19 +33,18 @@ func (ct *commitItem) Description() string { return ct.desc }
 func (ct *commitItem) FilterValue() string { return ct.desc }
 
 type logModel struct {
-	list list.Model
+	gitClient *gitclient.GitClient
+	list      list.Model
 }
 
-func NewLogList(commits []string) tea.Model {
+func NewLogList(gitClient *gitclient.GitClient) tea.Model {
+	commits, _ := gitClient.GetCommitHistory()
 	items := make([]list.Item, len(commits))
 
-	for i, c := range commits {
-		parts := strings.SplitN(c, " ", 2)
-		if len(parts) == 2 {
-			items[i] = &commitItem{
-				title: parts[0],
-				desc:  parts[1],
-			}
+	for i, commit := range commits {
+		items[i] = &commitItem{
+			title: commit.Hash.String(),
+			desc:  commit.Message,
 		}
 	}
 
@@ -61,7 +59,10 @@ func NewLogList(commits []string) tea.Model {
 	l.Styles.Title = selectedStyle.PaddingLeft(2).PaddingRight(2)
 	l.SetShowStatusBar(false)
 
-	return logModel{list: l}
+	return logModel{
+		gitClient: gitClient,
+		list:      l,
+	}
 }
 
 func (m logModel) Init() tea.Cmd {
