@@ -1,6 +1,9 @@
 package tui
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/Viriathus1/tiggo/internal/gitclient"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -37,13 +40,19 @@ func NewLogList(gitClient *gitclient.GitClient) tea.Model {
 	items := make([]list.Item, len(commits))
 
 	for i, commit := range commits {
+		itemMetaDesc := fmt.Sprintf("Meta:\tcommited by %s on %s\n",
+			commit.Author.Name,
+			commit.Author.When.Format(time.DateOnly),
+		)
+		itemCommitMessage := fmt.Sprintf("Message: %s\n", commit.Message)
 		items[i] = &commitItem{
 			title: commit.Hash.String(),
-			desc:  commit.Message,
+			desc:  itemMetaDesc + itemCommitMessage,
 		}
 	}
 
 	d := list.NewDefaultDelegate()
+	d.SetHeight(3)
 	d.Styles.NormalTitle = normalStyle
 	d.Styles.NormalDesc = normalStyle
 	d.Styles.SelectedTitle = selectedStyle
