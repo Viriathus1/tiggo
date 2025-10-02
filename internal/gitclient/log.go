@@ -6,7 +6,9 @@ import (
 )
 
 func (gc *GitClient) GetCommitHistory() ([]*object.Commit, error) {
-	cIter, err := gc.repo.Log(&git.LogOptions{})
+	cIter, err := gc.repo.Log(&git.LogOptions{
+		Order: git.LogOrderCommitterTime,
+	})
 	if err != nil {
 		return nil, err
 	}
