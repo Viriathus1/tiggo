@@ -1,16 +1,13 @@
 package tui
 
 import (
-	"strings"
+	"fmt"
+	"time"
 
+	"github.com/Viriathus1/tiggo/internal/gitclient"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-)
-
-const (
-	listHeight = 14
-	listWidth  = 50
 )
 
 var (
@@ -34,34 +31,42 @@ func (ct *commitItem) Description() string { return ct.desc }
 func (ct *commitItem) FilterValue() string { return ct.desc }
 
 type logModel struct {
-	list list.Model
+	gitClient *gitclient.GitClient
+	list      list.Model
 }
 
-func NewLogList(commits []string) tea.Model {
+func NewLogList(gitClient *gitclient.GitClient) tea.Model {
+	commits, _ := gitClient.GetCommitHistory()
 	items := make([]list.Item, len(commits))
 
-	for i, c := range commits {
-		parts := strings.SplitN(c, " ", 2)
-		if len(parts) == 2 {
-			items[i] = &commitItem{
-				title: parts[0],
-				desc:  parts[1],
-			}
+	for i, commit := range commits {
+		itemMetaDesc := fmt.Sprintf("Meta:\tcommited by %s on %s\n",
+			commit.Author.Name,
+			commit.Author.When.Format(time.DateOnly),
+		)
+		itemCommitMessage := fmt.Sprintf("Message: %s\n", commit.Message)
+		items[i] = &commitItem{
+			title: commit.Hash.String(),
+			desc:  itemMetaDesc + itemCommitMessage,
 		}
 	}
 
 	d := list.NewDefaultDelegate()
+	d.SetHeight(3)
 	d.Styles.NormalTitle = normalStyle
 	d.Styles.NormalDesc = normalStyle
 	d.Styles.SelectedTitle = selectedStyle
 	d.Styles.SelectedDesc = selectedStyle
 
-	l := list.New(items, d, listWidth, listHeight)
+	l := list.New(items, d, 0, 0)
 	l.Title = "Git Log"
 	l.Styles.Title = selectedStyle.PaddingLeft(2).PaddingRight(2)
 	l.SetShowStatusBar(false)
 
-	return logModel{list: l}
+	return logModel{
+		gitClient: gitClient,
+		list:      l,
+	}
 }
 
 func (m logModel) Init() tea.Cmd {
@@ -69,6 +74,11 @@ func (m logModel) Init() tea.Cmd {
 }
 
 func (m logModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.list.SetSize(msg.Width, msg.Height)
+	}
+
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
 	return m, cmd
